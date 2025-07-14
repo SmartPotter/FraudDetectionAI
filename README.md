@@ -6,7 +6,7 @@ A next-gen fraud prevention and trust platform for enterprise retailers (like Wa
 
 ## Demo
 
-![Demo Video](https://drive.google.com/file/d/1D3hOtacD0jWKbgTKsrJ9WJpgQCDFlG11/view?usp=sharing)
+[Demo Video](https://drive.google.com/file/d/1D3hOtacD0jWKbgTKsrJ9WJpgQCDFlG11/view?usp=sharing)
 
 ---
 
