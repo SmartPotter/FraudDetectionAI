@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import os
 from dotenv import load_dotenv
+from app.routes import trace
 
 from app.routes import upload, score, explain, block, blockchain, report, verify
 
@@ -34,6 +35,7 @@ app.include_router(block.router, prefix="/api", tags=["Blocklist"])
 app.include_router(blockchain.router, prefix="/api", tags=["Blockchain"])
 app.include_router(report.router, prefix="/api", tags=["Reports"])
 app.include_router(verify.router, prefix="/api", tags=["Verification"])
+app.include_router(trace.router, prefix="/api", tags=["Trace"])
 
 @app.get("/")
 async def root():

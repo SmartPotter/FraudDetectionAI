@@ -1,5 +1,22 @@
 import React from 'react';
 import { TrendingUp, Shield, AlertTriangle, Users } from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from 'recharts';
+import { ComposableMap, Geographies, Geography } from 'react-simple-maps';
+import { feature } from 'topojson-client';
+import worldData from 'world-atlas/countries-110m.json';
+
+const geoFeatures = feature(
+  worldData as any,
+  (worldData as any).objects.countries
+).features;
 
 const Dashboard: React.FC = () => {
   const stats = [
@@ -32,6 +49,33 @@ const Dashboard: React.FC = () => {
       icon: Users,
     },
   ];
+
+  const riskTrendData = [
+    { time: '9 AM', score: 0.12 },
+    { time: '10 AM', score: 0.25 },
+    { time: '11 AM', score: 0.31 },
+    { time: '12 PM', score: 0.48 },
+    { time: '1 PM', score: 0.61 },
+    { time: '2 PM', score: 0.72 },
+    { time: '3 PM', score: 0.54 },
+    { time: '4 PM', score: 0.43 },
+  ];
+
+  const regionRiskData: Record<string, number> = {
+    IN: 0.85,
+    US: 0.4,
+    CN: 0.65,
+    BR: 0.2,
+    RU: 0.55,
+  };
+
+  const isoAlpha2Map: Record<number, string> = {
+    356: 'IN',
+    840: 'US',
+    156: 'CN',
+    76: 'BR',
+    643: 'RU',
+  };
 
   return (
     <div className="space-y-6">
@@ -68,24 +112,55 @@ const Dashboard: React.FC = () => {
         ))}
       </div>
 
-      {/* Charts Placeholder */}
+      {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Risk Score Trends</h3>
-          <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-            <span className="text-gray-500">Chart visualization will be implemented</span>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={riskTrendData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="time" />
+                <YAxis domain={[0, 1]} />
+                <Tooltip />
+                <Line type="monotone" dataKey="score" stroke="#0D6EFD" strokeWidth={2} dot />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Regional Risk Analysis</h3>
-          <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-            <span className="text-gray-500">Geographic heatmap will be implemented</span>
+          <div className="h-64">
+            <ComposableMap projectionConfig={{ scale: 120 }}>
+              <Geographies geography={geoFeatures}>
+                {({ geographies }) =>
+                  geographies.map((geo) => {
+                    const numericCode = geo.id;
+                    const alpha2 = isoAlpha2Map[numericCode];
+                    const risk = alpha2 ? regionRiskData[alpha2] : undefined;
+                    const fill = risk ? `rgba(255, 0, 0, ${risk})` : '#DDD';
+
+                    return (
+                      <Geography
+                        key={geo.rsmKey}
+                        geography={geo}
+                        style={{
+                          default: { fill, outline: 'none' },
+                          hover: { fill: '#F53', outline: 'none' },
+                          pressed: { fill: '#E42', outline: 'none' },
+                        }}
+                      />
+                    );
+                  })
+                }
+              </Geographies>
+            </ComposableMap>
           </div>
         </div>
       </div>
 
-      {/* Recent Activity */}
+      {/* Recent Alerts */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">Recent Fraud Alerts</h3>
@@ -98,9 +173,7 @@ const Dashboard: React.FC = () => {
                   <AlertTriangle className="h-5 w-5 text-red-500" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">
-                    High-risk transaction detected
-                  </p>
+                  <p className="text-sm font-medium text-gray-900">High-risk transaction detected</p>
                   <p className="text-sm text-gray-500">
                     User ID: usr_789, Amount: $2,450, Risk Score: 0.94
                   </p>

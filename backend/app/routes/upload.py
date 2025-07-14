@@ -14,32 +14,25 @@ router = APIRouter()
 
 @router.post("/upload", response_model=UploadResponse)
 async def upload_transaction_file(file: UploadFile = File(...)):
-    """
-    Upload and process transaction CSV file for fraud analysis
-    """
     try:
-        # Validate file type
         if not file.filename.endswith('.csv'):
             raise HTTPException(status_code=400, detail="Only CSV files are supported")
-        
-        # Read file contents
+
         contents = await file.read()
-        
-        # Parse CSV
+        print("✅ File read")
+
         df = parse_csv_file(contents)
-        
-        # Validate data structure
+        print("✅ CSV parsed. Columns:", df.columns)
+
         validated_data = validate_transaction_data(df)
-        
-        # Generate file ID for tracking
+        print("✅ Data validated. Sample:", validated_data[:2])
+
         file_id = str(uuid.uuid4())
-        
-        # Save to Supabase (async)
         await save_transactions(validated_data, file_id)
-        
-        # Prepare response
+        print("✅ Saved to Supabase")
+
         preview_data = df.head(5).to_dict(orient="records")
-        
+
         return UploadResponse(
             message="File uploaded and processed successfully",
             total_records=len(df),
@@ -47,9 +40,12 @@ async def upload_transaction_file(file: UploadFile = File(...)):
             preview=preview_data,
             file_id=file_id
         )
-        
+
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"File processing failed: {str(e)}")
+
 
 @router.get("/upload/status/{file_id}")
 async def get_upload_status(file_id: str):

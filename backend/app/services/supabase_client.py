@@ -4,11 +4,12 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-
+from dotenv import load_dotenv
 from app.models.schemas import (
     TransactionData, ScoreResponse, BlockUserRequest, 
     BlockedUser, UploadResponse
 )
+load_dotenv()
 
 class SupabaseClient:
     def __init__(self):
